@@ -1,5 +1,6 @@
 """Widget for visualization of tree models"""
 import numpy as np
+import csv
 
 from AnyQt.QtWidgets import (
     QGraphicsRectItem, QGraphicsTextItem, QSizePolicy, QStyle,
@@ -303,6 +304,7 @@ class OWTreeGraph(OWTreeViewer2D):
         """Create a structure of tree nodes from the given model"""
         node_obj = TreeNode(self.tree_adapter, node, parent)
         self.scene.addItem(node_obj)
+        self.save_node(node)
         if parent:
             edge = GraphicsEdge(node1=parent, node2=node_obj)
             self.scene.addItem(edge)
@@ -370,6 +372,16 @@ class OWTreeGraph(OWTreeViewer2D):
         text = self._update_node_info_attr_name(node, text)
         node.setHtml(
             f'<p style="line-height: 120%; margin-bottom: 0">{text}</p>')
+
+    def save_node(self, node):
+        node_inst = node
+        distr = self.tree_adapter.get_distribution(node_inst)[0]
+        distr = distr / np.sum(distr)
+        modus = np.argmax(distr)
+        if self.tree_adapter.parent(node_inst):
+            print("Node ", self.tree_adapter.short_rule(node_inst), self.domain.class_vars[0].values[int(modus)])
+        else:
+            print("Root Node ", self.domain.class_vars[0].values[int(modus)], self.tree_adapter.attribute(node_inst))
 
     def update_node_info_reg(self, node):
         """Update the printed contents of the node for regression trees"""
